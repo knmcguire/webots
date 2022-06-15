@@ -97,6 +97,7 @@ WbPreferencesDialog::WbPreferencesDialog(QWidget *parent, const QString &default
   mCheckWebotsUpdateCheckBox->setChecked(prefs->value("General/checkWebotsUpdateOnStartup").toBool());
   mRenderingCheckBox->setChecked(prefs->value("General/rendering").toBool());
   mDisableSaveWarningCheckBox->setChecked(prefs->value("General/disableSaveWarning").toBool());
+  mThumnailCheckBox->setChecked(prefs->value("General/thumbnail").toBool());
 
   // openGL tab
   mAmbientOcclusionCombo->setCurrentIndex(prefs->value("OpenGL/GTAO", 2).toInt());
@@ -179,6 +180,7 @@ void WbPreferencesDialog::accept() {
   prefs->setValue("General/checkWebotsUpdateOnStartup", mCheckWebotsUpdateCheckBox->isChecked());
   prefs->setValue("General/rendering", mRenderingCheckBox->isChecked());
   prefs->setValue("General/disableSaveWarning", mDisableSaveWarningCheckBox->isChecked());
+  prefs->setValue("General/thumbnail", mThumnailCheckBox->isChecked());
 
   // openGL
   prefs->setValue("OpenGL/GTAO", mAmbientOcclusionCombo->currentIndex());
@@ -253,7 +255,8 @@ void WbPreferencesDialog::clearCache() {
 void WbPreferencesDialog::addNewIp() {
   bool ok;
   const QString text =
-    QInputDialog::getText(this, tr("Add IP address"), tr("New IP address (X.X.X.X):"), QLineEdit::Normal, tr(""), &ok);
+    QInputDialog::getText(this, tr("Add IP address(es)"), tr("New allowed IP address(es) (<X.X.X.X> or <X.X.X.X>/<netmask>):"),
+                          QLineEdit::Normal, tr(""), &ok);
   if (ok && !text.isEmpty())
     mAllowedIps->insertItem(0, text);
 }
@@ -412,21 +415,28 @@ QWidget *WbPreferencesDialog::createGeneralTab() {
   layout->addWidget(mDisableSaveWarningCheckBox, 10, 1);
 
   // row 11
+  mThumnailCheckBox = new QCheckBox(tr("Capture thumbnail on world save or share."), this);
+  mThumnailCheckBox->setToolTip(tr("If this option is enabled, Webots will take and store a 768px by 432px (16:9)\nscreenshot "
+                                   "of the world in .jpg format when the it is saved, shared or exported."));
+  layout->addWidget(new QLabel(tr("Thumbnail:"), this), 11, 0);
+  layout->addWidget(mThumnailCheckBox, 11, 1);
+
+  // row 12
   mTelemetryCheckBox = new QCheckBox(tr("Send technical data to Webots developers"), this);
   mTelemetryCheckBox->setToolTip(tr("We need your help to continue to improve Webots: more information at:\n"
                                     "https://cyberbotics.com/doc/guide/telemetry"));
   QLabel *label =
     new QLabel(tr("Telemetry (<a style='color: #5DADE2;' href='https://cyberbotics.com/doc/guide/telemetry'>info</a>):"), this);
   connect(label, &QLabel::linkActivated, &WbDesktopServices::openUrl);
-  layout->addWidget(label, 11, 0);
-  layout->addWidget(mTelemetryCheckBox, 11, 1);
+  layout->addWidget(label, 12, 0);
+  layout->addWidget(mTelemetryCheckBox, 12, 1);
 
-  // row 12
+  // row 13
   mCheckWebotsUpdateCheckBox = new QCheckBox(tr("Check for Webots updates on startup"), this);
   mCheckWebotsUpdateCheckBox->setToolTip(tr("If this option is enabled, Webots will check if a new version is available for "
                                             "download\nat every startup. If available, it will inform you about it."));
-  layout->addWidget(new QLabel(tr("Update policy:"), this), 12, 0);
-  layout->addWidget(mCheckWebotsUpdateCheckBox, 12, 1);
+  layout->addWidget(new QLabel(tr("Update policy:"), this), 13, 0);
+  layout->addWidget(mCheckWebotsUpdateCheckBox, 13, 1);
 
   setTabOrder(mStartupModeCombo, mEditorFontEdit);
   setTabOrder(mEditorFontEdit, chooseFontButton);
